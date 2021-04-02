@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: kubedb/mysql:5.7.25
+    command: --max_allowed_packet=32505856
+    env_file:
+      - ./mysql/config/mysql.env
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/mysqlconf:/etc/mysql/conf.d
+
+  datum:
+    context: ./datum
