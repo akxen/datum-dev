@@ -1,4 +1,12 @@
-"""Update MySQL database with latest current report data"""
+"""
+Update MySQL database with latest current report data
+
+Steps to add a new table:
+1. Create CSV template
+2. Define function used to extract data
+3. Add settings to update_database function
+4. Update reports.py tasks
+"""
 
 import os
 import csv
@@ -139,6 +147,8 @@ def initialise_tables():
         'dispatch_scada_files',
         'dispatch_report_case_solution',
         'dispatch_report_case_solution_files',
+        'dispatch_report_region_solution',
+        'dispatch_report_region_solution_files',
     ]
 
     for t in tables:
@@ -208,7 +218,7 @@ def get_dispatch_scada_data(files_dir, filename):
 
 
 def get_dispatch_report_case_solution(files_dir, filename):
-    """Extract case solution form dispatch reports"""
+    """Extract case solution from dispatch reports"""
 
     data = extract_values(files_dir=files_dir, filename=filename,
                           filters=[(1, 'DISPATCH'), (2, 'CASESOLUTION')])
@@ -218,6 +228,25 @@ def get_dispatch_report_case_solution(files_dir, filename):
 
     # Get table columns, convert to lower case, remove 'row_id'
     columns = get_table_columns(table='dispatch_report_case_solution')
+    columns = [i for i in columns if i != 'row_id']
+    columns = [i.upper() for i in columns]
+
+    out = df.loc[:, columns].replace(r'', np.NaN)
+
+    return out
+
+
+def get_dispatch_report_region_solution(files_dir, filename):
+    """Extract region solution from dispatch reports"""
+
+    data = extract_values(files_dir=files_dir, filename=filename,
+                          filters=[(1, 'DREGION')])
+
+    df = pd.DataFrame(data)
+    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+
+    # Get table columns, convert to lower case, remove 'row_id'
+    columns = get_table_columns(table='dispatch_report_region_solution')
     columns = [i for i in columns if i != 'row_id']
     columns = [i.upper() for i in columns]
 
@@ -270,6 +299,10 @@ def update_database(table):
         'dispatch_report_case_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
             'extractor_function': get_dispatch_report_case_solution
+        },
+        'dispatch_report_region_solution': {
+            'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
+            'extractor_function': get_dispatch_report_region_solution
         },
     }
 
