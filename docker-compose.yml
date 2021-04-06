@@ -1,6 +1,7 @@
 version: '3.9'
 
 services:
+  # API used to query current reports data
   mysql:
     image: kubedb/mysql:5.7.25
     command: --max_allowed_packet=32505856
@@ -8,7 +9,66 @@ services:
       - ./mysql/config/mysql.env
     volumes:
       - ./mysql/data:/var/lib/mysql
-      - ./mysql/mysqlconf:/etc/mysql/conf.d
 
-  datum:
-    context: ./datum
+  datum_api:
+    build:
+      context: ./datum
+    volumes:
+      - datum_api_static_data:/vol/web
+      - ./datum/project:/app
+    env_file:
+      - ./datum/config/datum-api-base.env
+      - ./datum/config/datum-api-development.env
+    networks:
+      default:
+        aliases:
+          - 'datum-api'
+    ports:
+      - 8000:8000
+    # deploy:
+    #   restart_policy:
+    #     condition: on-failure
+
+  # Data collection using Apache Airflow
+  postgres:
+    image: postgres:9.6
+    environment:
+      - POSTGRES_USER=airflow
+      - POSTGRES_PASSWORD=airflow
+      - POSTGRES_DB=airflow
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+
+  webserver:
+    build:
+      context: ./airflow
+    # restart: always
+    depends_on:
+      - postgres
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Local
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes:
+        - ./airflow/dags:/usr/local/airflow/dags
+        - ./airflow/data:/usr/local/airflow/data
+        # - ./plugins:/usr/local/airflow/plugins
+    ports:
+        - "8080:8080"
+    command: webserver
+    env_file:
+        - './airflow/config/airflow-base.env'
+        - './airflow/config/airflow-development.env'
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+volumes:
+  datum_api_static_data:
