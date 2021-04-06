@@ -7,7 +7,11 @@ import MySQLdb
 import MySQLdb.cursors
 from sqlalchemy import create_engine
 
+import numpy as np
 import pandas as pd
+
+from io import TextIOWrapper
+from zipfile import ZipFile
 
 
 def connect_to_database():
@@ -25,13 +29,39 @@ def connect_to_database():
     return conn, cur
 
 
-def get_unique_key_sql(table):
-    """Construct SQL component that specifies jointly unique keys for given table"""
+def get_table_columns(table):
+    """Get table columns"""
 
-    if table == 'dispatch_scada':
-        return ", UNIQUE KEY (settlementdate, duid))"
-    else:
-        return ")"
+    # Read rows and append column name and data type to main container
+    template_path = os.path.join(os.environ['MYSQL_TABLE_TEMPLATES_DIR'], f'{table}.csv')
+
+    with open(template_path, newline='') as f:
+        template_reader = csv.reader(f, delimiter=',')
+
+        # Rows in the CSV template (corresponding to columns into MySQL table)
+        columns = []
+        for row in template_reader:
+            columns.append(row[0])
+
+    return columns
+
+
+def get_table_unique_keys(table):
+    """Get columns that correspond to jointly unique keys"""
+
+    # Read rows and append column name and data type to main container
+    template_path = os.path.join(os.environ['MYSQL_TABLE_TEMPLATES_DIR'], f'{table}.csv')
+
+    with open(template_path, newline='') as f:
+        template_reader = csv.reader(f, delimiter=',')
+
+        # Rows in the CSV template (corresponding to columns into MySQL table)
+        columns = []
+        for row in template_reader:
+            if row[2] == 'KEY':
+                columns.append(row[0])
+
+    return columns
 
 
 def get_columns_sql(table):
@@ -46,10 +76,24 @@ def get_columns_sql(table):
         # Rows in the CSV template (corresponding to columns into MySQL table)
         columns = []
         for row in template_reader:
-            columns.append(row)
+            columns.append(row[:2])
 
     # SQL to construct column name component for query
     sql = ', '.join([' '.join(c) for c in columns])
+
+    return sql
+
+
+def get_unique_key_sql(table):
+    """Get SQL component that specifies jointly unique keys"""
+
+    keys = get_table_unique_keys(table=table)
+
+    # SQL to construct unique key statement for query
+    if keys:
+        sql = ', UNIQUE KEY (' + ', '.join(keys) + '))'
+    else:
+        sql = ')'
 
     return sql
 
@@ -90,7 +134,13 @@ def create_table(table):
 def initialise_tables():
     """Setup database tables if they don't already exist"""
 
-    tables = ['dispatch_scada', 'dispatch_scada_files']
+    tables = [
+        'dispatch_scada',
+        'dispatch_scada_files',
+        'dispatch_report_case_solution',
+        'dispatch_report_case_solution_files',
+    ]
+
     for t in tables:
         create_table(t)
 
@@ -129,6 +179,23 @@ def get_files_to_upload(files_dir, table):
     return to_upload
 
 
+def extract_values(files_dir, filename, filters):
+    """Extract values from zip file. Filtering on colum values to identify sections."""
+
+    out = []
+    csv_filename = filename.replace('.zip', '.CSV')
+    with ZipFile(os.path.join(files_dir, filename)) as zf:
+        with zf.open(csv_filename, 'r') as infile:
+            reader = csv.reader(TextIOWrapper(infile, 'utf-8'))
+            for row in reader:
+
+                # Check if row should be retained by checking filters
+                keep_row = all([row[index] == value for index, value in filters])
+                if keep_row:
+                    out.append(row)
+    return out
+
+
 def get_dispatch_scada_data(files_dir, filename):
     """Extract dispatch SCADA data from zipped archive"""
 
@@ -138,6 +205,25 @@ def get_dispatch_scada_data(files_dir, filename):
                      dtype={'DUID': str, 'SCADAVALUE': float})
 
     return df
+
+
+def get_dispatch_report_case_solution(files_dir, filename):
+    """Extract case solution form dispatch reports"""
+
+    data = extract_values(files_dir=files_dir, filename=filename,
+                          filters=[(1, 'DISPATCH'), (2, 'CASESOLUTION')])
+
+    df = pd.DataFrame(data)
+    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+
+    # Get table columns, convert to lower case, remove 'row_id'
+    columns = get_table_columns(table='dispatch_report_case_solution')
+    columns = [i for i in columns if i != 'row_id']
+    columns = [i.upper() for i in columns]
+
+    out = df.loc[:, columns].replace(r'', np.NaN)
+
+    return out
 
 
 def upload_to_database(table, files_dir, filename, func):
@@ -153,6 +239,8 @@ def upload_to_database(table, files_dir, filename, func):
 
     # Extract data and upload to database
     df = func(files_dir=files_dir, filename=filename)
+
+    print("TEST DF", df)
     df.to_sql(con=my_conn, schema=schema, name=table,
               if_exists='append', index=False)
 
@@ -179,9 +267,9 @@ def update_database(table):
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_SCADA'),
             'extractor_function': get_dispatch_scada_data
         },
-        'p5_constraint_solution': {
-            'files_dir': None,
-            'extractor_function': None
+        'dispatch_report_case_solution': {
+            'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
+            'extractor_function': get_dispatch_report_case_solution
         },
     }
 

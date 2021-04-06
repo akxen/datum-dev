@@ -1,4 +1,4 @@
-row_id,INT NOT NULL AUTO_INCREMENT
-settlementdate,"DATETIME NOT NULL"
-duid,"VARCHAR(20) NOT NULL"
-scadavalue,"DECIMAL(16,6)"
+row_id,INT NOT NULL AUTO_INCREMENT,
+settlementdate,DATETIME NOT NULL,KEY
+duid,VARCHAR(20) NOT NULL,KEY
+scadavalue,"DECIMAL(16,6)",

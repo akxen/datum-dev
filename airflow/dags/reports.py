@@ -30,10 +30,17 @@ t1 = BashOperator(
     dag=dag)
 
 t2 = PythonOperator(
-    task_id='update_database',
+    task_id='update_dispatch_scada',
     python_callable=update_database,
     op_kwargs={'table': 'dispatch_scada'},
     dag=dag,
 )
 
-t1 >> t2
+t3 = PythonOperator(
+    task_id='update_dispatch_report_case_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'dispatch_report_case_solution'},
+    dag=dag,
+)
+
+t1 >> [t2, t3]
