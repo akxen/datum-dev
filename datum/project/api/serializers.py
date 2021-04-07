@@ -33,25 +33,25 @@ class DispatchReportConstraintSolutionSerializer(serializers.ModelSerializer):
         exclude = ['row_id']
 
 
-class P5MinCaseSolutionSerializer(serializers.ModelSerializer):
+class P5CaseSolutionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.P5MinCaseSolution
+        model = models.P5CaseSolution
         exclude = ['row_id']
 
 
-class P5MinRegionSolutionSerializer(serializers.ModelSerializer):
+class P5RegionSolutionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.P5MinRegionSolution
+        model = models.P5RegionSolution
         exclude = ['row_id']
 
 
-class P5MinInterconnectorSolutionSerializer(serializers.ModelSerializer):
+class P5InterconnectorSolutionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.P5MinInterconnectorSolution
+        model = models.P5InterconnectorSolution
         exclude = ['row_id']
 
 
-class P5MinConstraintSolutionSerializer(serializers.ModelSerializer):
+class P5ConstraintSolutionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.P5MinConstraintSolution
+        model = models.P5ConstraintSolution
         exclude = ['row_id']

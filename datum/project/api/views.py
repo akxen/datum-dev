@@ -128,14 +128,14 @@ class DispatchReportConstraintSolutionView(APIView):
         return Response(serializer.data)
 
 
-class P5MinCaseSolutionView(APIView):
+class P5CaseSolutionView(APIView):
     """Latest P5min report case solution"""
 
     def get(self, request, format=None):
         """Get snapshot of latest P5min case solution"""
 
-        model = models.P5MinCaseSolution
-        model_serializer = serializers.P5MinCaseSolutionSerializer
+        model = models.P5CaseSolution
+        model_serializer = serializers.P5CaseSolutionSerializer
 
         # Get latest timestamp
         latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
@@ -148,14 +148,14 @@ class P5MinCaseSolutionView(APIView):
         return Response(serializer.data)
 
 
-class P5MinRegionSolutionView(APIView):
+class P5RegionSolutionView(APIView):
     """Latest P5min report region solution"""
 
     def get(self, request, format=None):
         """Get snapshot of latest P5min region solution"""
 
-        model = models.P5MinRegionSolution
-        model_serializer = serializers.P5MinRegionSolutionSerializer
+        model = models.P5RegionSolution
+        model_serializer = serializers.P5RegionSolutionSerializer
 
         # Get latest timestamp
         latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
@@ -168,14 +168,14 @@ class P5MinRegionSolutionView(APIView):
         return Response(serializer.data)
 
 
-class P5MinInterconnectorSolutionView(APIView):
+class P5InterconnectorSolutionView(APIView):
     """Latest P5min report interconnector solution"""
 
     def get(self, request, format=None):
         """Get snapshot of latest P5min interconnector solution"""
 
-        model = models.P5MinInterconnectorSolution
-        model_serializer = serializers.P5MinInterconnectorSolutionSerializer
+        model = models.P5InterconnectorSolution
+        model_serializer = serializers.P5InterconnectorSolutionSerializer
 
         # Get latest timestamp
         latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
@@ -188,14 +188,14 @@ class P5MinInterconnectorSolutionView(APIView):
         return Response(serializer.data)
 
 
-class P5MinConstraintSolutionView(APIView):
+class P5ConstraintSolutionView(APIView):
     """Latest P5min report constraint solution"""
 
     def get(self, request, format=None):
         """Get snapshot of latest P5min constraint solution"""
 
-        model = models.P5MinConstraintSolution
-        model_serializer = serializers.P5MinConstraintSolutionSerializer
+        model = models.P5ConstraintSolution
+        model_serializer = serializers.P5ConstraintSolutionSerializer
 
         # Get latest timestamp
         latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))

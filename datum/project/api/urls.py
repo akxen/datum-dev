@@ -11,8 +11,8 @@ urlpatterns = [
     path('dispatch_report/interconnector_solution/', views.DispatchReportInterconnectorSolutionView.as_view()),
     path('dispatch_report/constraint_solution/', views.DispatchReportConstraintSolutionView.as_view()),
 
-    path('p5min/case_solution/', views.P5MinCaseSolutionView.as_view()),
-    path('p5min/region_solution/', views.P5MinRegionSolutionView.as_view()),
-    path('p5min/interconnector_solution/', views.P5MinInterconnectorSolutionView.as_view()),
-    path('p5min/constraint_solution/', views.P5MinConstraintSolutionView.as_view()),
+    path('p5/case_solution/', views.P5CaseSolutionView.as_view()),
+    path('p5/region_solution/', views.P5RegionSolutionView.as_view()),
+    path('p5/interconnector_solution/', views.P5InterconnectorSolutionView.as_view()),
+    path('p5/constraint_solution/', views.P5ConstraintSolutionView.as_view()),
 ]

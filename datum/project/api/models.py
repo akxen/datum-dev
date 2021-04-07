@@ -219,7 +219,7 @@ class DispatchReportConstraintSolution(models.Model):
         app_label = 'reports'
 
 
-class P5MinCaseSolution(models.Model):
+class P5CaseSolution(models.Model):
     row_id = models.IntegerField(primary_key=True)
     run_datetime = models.DateTimeField()
     startinterval_datetime = models.DateTimeField()
@@ -243,11 +243,11 @@ class P5MinCaseSolution(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'p5min_case_solution'
+        db_table = 'p5_case_solution'
         app_label = 'reports'
 
 
-class P5MinRegionSolution(models.Model):
+class P5RegionSolution(models.Model):
     row_id = models.IntegerField(primary_key=True)
     run_datetime = models.DateTimeField()
     intervention = models.IntegerField()
@@ -353,11 +353,11 @@ class P5MinRegionSolution(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'p5min_region_solution'
+        db_table = 'p5_region_solution'
         app_label = 'reports'
 
 
-class P5MinInterconnectorSolution(models.Model):
+class P5InterconnectorSolution(models.Model):
     row_id = models.IntegerField(primary_key=True)
     run_datetime = models.DateTimeField()
     intervention = models.IntegerField()
@@ -384,11 +384,11 @@ class P5MinInterconnectorSolution(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'p5min_interconnector_solution'
+        db_table = 'p5_interconnector_solution'
         app_label = 'reports'
 
 
-class P5MinConstraintSolution(models.Model):
+class P5ConstraintSolution(models.Model):
     row_id = models.IntegerField(primary_key=True)
     run_datetime = models.DateTimeField()
     intervention = models.IntegerField()
@@ -405,5 +405,5 @@ class P5MinConstraintSolution(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'p5min_constraint_solution'
+        db_table = 'p5_constraint_solution'
         app_label = 'reports'

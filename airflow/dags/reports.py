@@ -66,30 +66,30 @@ t6 = PythonOperator(
 )
 
 t7 = PythonOperator(
-    task_id='update_p5min_case_solution',
+    task_id='update_p5_case_solution',
     python_callable=update_database,
-    op_kwargs={'table': 'p5min_case_solution'},
+    op_kwargs={'table': 'p5_case_solution'},
     dag=dag,
 )
 
 t8 = PythonOperator(
-    task_id='update_p5min_region_solution',
+    task_id='update_p5_region_solution',
     python_callable=update_database,
-    op_kwargs={'table': 'p5min_region_solution'},
+    op_kwargs={'table': 'p5_region_solution'},
     dag=dag,
 )
 
 t9 = PythonOperator(
-    task_id='update_p5min_interconnector_solution',
+    task_id='update_p5_interconnector_solution',
     python_callable=update_database,
-    op_kwargs={'table': 'p5min_interconnector_solution'},
+    op_kwargs={'table': 'p5_interconnector_solution'},
     dag=dag,
 )
 
 t10 = PythonOperator(
-    task_id='update_p5min_constraint_solution',
+    task_id='update_p5_constraint_solution',
     python_callable=update_database,
-    op_kwargs={'table': 'p5min_constraint_solution'},
+    op_kwargs={'table': 'p5_constraint_solution'},
     dag=dag,
 )
 

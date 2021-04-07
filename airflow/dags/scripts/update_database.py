@@ -2,10 +2,10 @@
 Update MySQL database with latest current report data
 
 Steps to add a new table:
-1. Create CSV template
+1. Create CSV template defining column names and types
 2. Define function used to extract data
 3. Add settings to update_database function
-4. Update reports.py tasks
+4. Create task in reports.py
 """
 
 import os
@@ -35,6 +35,13 @@ def connect_to_database():
     cur = conn.cursor()
 
     return conn, cur
+
+
+def close_connection(conn, cur):
+    """Close database connection"""
+
+    cur.close()
+    conn.close()
 
 
 def get_table_columns(table):
@@ -93,7 +100,7 @@ def get_columns_sql(table):
 
 
 def get_unique_key_sql(table):
-    """Get SQL component that specifies jointly unique keys"""
+    """Construct SQL component that specifies jointly unique keys"""
 
     keys = get_table_unique_keys(table=table)
 
@@ -134,9 +141,7 @@ def create_table(table):
     # Create table
     cur.execute(create_table_sql)
 
-    # Close database connections
-    cur.close()
-    conn.close()
+    close_connection(conn=conn, cur=cur)
 
 
 def initialise_tables():
@@ -153,14 +158,14 @@ def initialise_tables():
         'dispatch_report_interconnector_solution_files',
         'dispatch_report_constraint_solution',
         'dispatch_report_constraint_solution_files',
-        'p5min_case_solution',
-        'p5min_case_solution_files',
-        'p5min_region_solution',
-        'p5min_region_solution_files',
-        'p5min_interconnector_solution',
-        'p5min_interconnector_solution_files',
-        'p5min_constraint_solution',
-        'p5min_constraint_solution_files',
+        'p5_case_solution',
+        'p5_case_solution_files',
+        'p5_region_solution',
+        'p5_region_solution_files',
+        'p5_interconnector_solution',
+        'p5_interconnector_solution_files',
+        'p5_constraint_solution',
+        'p5_constraint_solution_files',
     ]
 
     for t in tables:
@@ -175,8 +180,7 @@ def get_uploaded_files(table):
     cur.execute(f"SELECT filename FROM {os.environ['MYSQL_SCHEMA']}.{table}_files")
     files = cur.fetchall()
 
-    cur.close()
-    conn.close()
+    close_connection(conn=conn, cur=cur)
 
     return [i['filename'] for i in files]
 
@@ -192,7 +196,6 @@ def get_files_to_upload(files_dir, table):
 
     uploaded = get_uploaded_files(table=table)
     available = get_available_files(files_dir=files_dir)
-
     to_upload = list(set(available) - set(uploaded))
 
     # Sort from oldest to most recent
@@ -215,16 +218,34 @@ def extract_values(files_dir, filename, filters):
                 keep_row = all([row[index] == value for index, value in filters])
                 if keep_row:
                     out.append(row)
+
     return out
 
 
-def get_dispatch_scada_data(files_dir, filename):
+def construct_dataframe(data, table):
+    """Construct DataFrame that will be loaded into MySQL database"""
+
+    # Set header
+    df = pd.DataFrame(data)
+    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+
+    # Get table columns, convert to lower case, remove 'row_id'
+    columns = get_table_columns(table=table)
+    columns = [i for i in columns if i != 'row_id']
+    columns = [i.upper() for i in columns]
+
+    # Replace empty strings with NaN to represent NULL values
+    out = df.loc[:, columns].replace(r'', np.NaN)
+
+    return out
+
+
+def get_dispatch_scada(files_dir, filename):
     """Extract dispatch SCADA data from zipped archive"""
 
-    file_path = os.path.join(files_dir, filename)
-    df = pd.read_csv(file_path, skiprows=1, skipfooter=1, engine='python',
-                     usecols=['SETTLEMENTDATE', 'DUID', 'SCADAVALUE'],
-                     dtype={'DUID': str, 'SCADAVALUE': float})
+    filters = [(1, 'DISPATCH')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='dispatch_scada')
 
     return df
 
@@ -232,147 +253,81 @@ def get_dispatch_scada_data(files_dir, filename):
 def get_dispatch_report_case_solution(files_dir, filename):
     """Extract case solution from dispatch reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename,
-                          filters=[(1, 'DISPATCH'), (2, 'CASESOLUTION')])
+    filters = [(1, 'DISPATCH'), (2, 'CASESOLUTION')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='dispatch_report_case_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='dispatch_report_case_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
 def get_dispatch_report_region_solution(files_dir, filename):
     """Extract region solution from dispatch reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename,
-                          filters=[(1, 'DREGION')])
+    filters = [(1, 'DREGION')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='dispatch_report_region_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='dispatch_report_region_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
 def get_dispatch_report_interconnector_solution(files_dir, filename):
     """Extract interconnector solution from dispatch reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(1, 'DINT')])
+    filters = [(1, 'DINT')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='dispatch_report_interconnector_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='dispatch_report_interconnector_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
 def get_dispatch_report_constraint_solution(files_dir, filename):
     """Extract constraint solution from dispatch reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(1, 'DCONS')])
+    filters = [(1, 'DCONS')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='dispatch_report_constraint_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='dispatch_report_constraint_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
-def get_p5min_case_solution(files_dir, filename):
+def get_p5_case_solution(files_dir, filename):
     """Extract case solution from P5min reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(2, 'CASESOLUTION')])
+    filters = [(2, 'CASESOLUTION')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='p5_case_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='p5min_case_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
-def get_p5min_region_solution(files_dir, filename):
+def get_p5_region_solution(files_dir, filename):
     """Extract region solution from P5min reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(2, 'REGIONSOLUTION')])
+    filters = [(2, 'REGIONSOLUTION')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='p5_region_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='p5min_region_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
-def get_p5min_interconnector_solution(files_dir, filename):
+def get_p5_interconnector_solution(files_dir, filename):
     """Extract interconnector solution from P5min reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(2, 'INTERCONNECTORSOLN')])
+    filters = [(2, 'INTERCONNECTORSOLN')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='p5_interconnector_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='p5min_interconnector_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
-def get_p5min_constraint_solution(files_dir, filename):
+def get_p5_constraint_solution(files_dir, filename):
     """Extract constraint solution from P5min reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename, filters=[(2, 'CONSTRAINTSOLUTION')])
+    filters = [(2, 'CONSTRAINTSOLUTION')]
+    data = extract_values(files_dir=files_dir, filename=filename, filters=filters)
+    df = construct_dataframe(data=data, table='p5_constraint_solution')
 
-    df = pd.DataFrame(data)
-    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
-
-    # Get table columns, convert to lower case, remove 'row_id'
-    columns = get_table_columns(table='p5min_constraint_solution')
-    columns = [i for i in columns if i != 'row_id']
-    columns = [i.upper() for i in columns]
-
-    out = df.loc[:, columns].replace(r'', np.NaN)
-
-    return out
+    return df
 
 
 def upload_to_database(table, files_dir, filename, func):
@@ -388,9 +343,7 @@ def upload_to_database(table, files_dir, filename, func):
 
     # Extract data and upload to database
     df = func(files_dir=files_dir, filename=filename)
-
-    df.to_sql(con=my_conn, schema=schema, name=table,
-              if_exists='append', index=False)
+    df.to_sql(con=my_conn, schema=schema, name=table, if_exists='append', index=False)
 
     # Record filename
     conn, cur = connect_to_database()
@@ -398,8 +351,7 @@ def upload_to_database(table, files_dir, filename, func):
     cur.execute(record_sql)
     conn.commit()
 
-    cur.close()
-    conn.close()
+    close_connection(conn=conn, cur=cur)
 
 
 def update_database(table):
@@ -413,7 +365,7 @@ def update_database(table):
     table_info = {
         'dispatch_scada': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_SCADA'),
-            'extractor_function': get_dispatch_scada_data
+            'extractor_function': get_dispatch_scada
         },
         'dispatch_report_case_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
@@ -431,21 +383,21 @@ def update_database(table):
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
             'extractor_function': get_dispatch_report_constraint_solution
         },
-        'p5min_case_solution': {
+        'p5_case_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'P5_Reports'),
-            'extractor_function': get_p5min_case_solution
+            'extractor_function': get_p5_case_solution
         },
-        'p5min_region_solution': {
+        'p5_region_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'P5_Reports'),
-            'extractor_function': get_p5min_region_solution
+            'extractor_function': get_p5_region_solution
         },
-        'p5min_interconnector_solution': {
+        'p5_interconnector_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'P5_Reports'),
-            'extractor_function': get_p5min_interconnector_solution
+            'extractor_function': get_p5_interconnector_solution
         },
-        'p5min_constraint_solution': {
+        'p5_constraint_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'P5_Reports'),
-            'extractor_function': get_p5min_constraint_solution
+            'extractor_function': get_p5_constraint_solution
         },
     }
 
@@ -461,13 +413,3 @@ def update_database(table):
                                func=table_info[table]['extractor_function'])
         except MySQLdb.IntegrityError as e:
             print(e, table, i)
-
-
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-
-    load_dotenv(os.path.join(os.path.dirname(__file__),
-                'config', 'db-updater-development.env'))
-
-    initialise_tables()
-    update_database(table='dispatch_scada')
