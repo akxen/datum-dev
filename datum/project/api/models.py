@@ -201,3 +201,19 @@ class DispatchReportInterconnectorSolution(models.Model):
         managed = False
         db_table = 'dispatch_report_interconnector_solution'
         app_label = 'reports'
+
+
+class DispatchReportConstraintSolution(models.Model):
+    row_id = models.IntegerField(primary_key=True)
+    settlementdate = models.DateTimeField()
+    runno = models.IntegerField()
+    constraintid = models.CharField(max_length=20)
+    intervention = models.IntegerField()
+    rhs = models.FloatField()
+    marginalvalue = models.FloatField()
+    violationdegree = models.FloatField()
+
+    class Meta:
+        managed = False
+        db_table = 'dispatch_report_constraint_solution'
+        app_label = 'reports'

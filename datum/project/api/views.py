@@ -106,3 +106,23 @@ class DispatchReportInterconnectorSolutionView(APIView):
         serializer = model_serializer(data, many=True)
 
         return Response(serializer.data)
+
+
+class DispatchReportConstraintSolutionView(APIView):
+    """Latest dispatch report constraint solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest constraint solution"""
+
+        model = models.DispatchReportConstraintSolution
+        model_serializer = serializers.DispatchReportConstraintSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('settlementdate'))
+        timestamp_str = str(latest_timestamp['settlementdate__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(settlementdate=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)

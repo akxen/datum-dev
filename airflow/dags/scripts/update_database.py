@@ -151,6 +151,8 @@ def initialise_tables():
         'dispatch_report_region_solution_files',
         'dispatch_report_interconnector_solution',
         'dispatch_report_interconnector_solution_files',
+        'dispatch_report_constraint_solution',
+        'dispatch_report_constraint_solution_files',
     ]
 
     for t in tables:
@@ -260,14 +262,31 @@ def get_dispatch_report_region_solution(files_dir, filename):
 def get_dispatch_report_interconnector_solution(files_dir, filename):
     """Extract interconnector solution from dispatch reports"""
 
-    data = extract_values(files_dir=files_dir, filename=filename,
-                          filters=[(1, 'DINT')])
+    data = extract_values(files_dir=files_dir, filename=filename, filters=[(1, 'DINT')])
 
     df = pd.DataFrame(data)
     df = df.rename(columns=df.iloc[0]).drop(df.index[0])
 
     # Get table columns, convert to lower case, remove 'row_id'
     columns = get_table_columns(table='dispatch_report_interconnector_solution')
+    columns = [i for i in columns if i != 'row_id']
+    columns = [i.upper() for i in columns]
+
+    out = df.loc[:, columns].replace(r'', np.NaN)
+
+    return out
+
+
+def get_dispatch_report_constraint_solution(files_dir, filename):
+    """Extract constraint solution from dispatch reports"""
+
+    data = extract_values(files_dir=files_dir, filename=filename, filters=[(1, 'DCONS')])
+
+    df = pd.DataFrame(data)
+    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+
+    # Get table columns, convert to lower case, remove 'row_id'
+    columns = get_table_columns(table='dispatch_report_constraint_solution')
     columns = [i for i in columns if i != 'row_id']
     columns = [i.upper() for i in columns]
 
@@ -290,7 +309,6 @@ def upload_to_database(table, files_dir, filename, func):
     # Extract data and upload to database
     df = func(files_dir=files_dir, filename=filename)
 
-    print("TEST DF", df)
     df.to_sql(con=my_conn, schema=schema, name=table,
               if_exists='append', index=False)
 
@@ -328,6 +346,10 @@ def update_database(table):
         'dispatch_report_interconnector_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
             'extractor_function': get_dispatch_report_interconnector_solution
+        },
+        'dispatch_report_constraint_solution': {
+            'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
+            'extractor_function': get_dispatch_report_constraint_solution
         },
     }
 

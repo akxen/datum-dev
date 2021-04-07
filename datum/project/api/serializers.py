@@ -25,3 +25,9 @@ class DispatchReportInterconnectorSolutionSerializer(serializers.ModelSerializer
     class Meta:
         model = models.DispatchReportInterconnectorSolution
         exclude = ['row_id']
+
+
+class DispatchReportConstraintSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DispatchReportConstraintSolution
+        exclude = ['row_id']

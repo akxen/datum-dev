@@ -58,4 +58,11 @@ t5 = PythonOperator(
     dag=dag,
 )
 
-t1 >> [t2, t3, t4, t5]
+t6 = PythonOperator(
+    task_id='update_dispatch_report_constraint_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'dispatch_report_constraint_solution'},
+    dag=dag,
+)
+
+t1 >> [t2, t3, t4, t5, t6]
