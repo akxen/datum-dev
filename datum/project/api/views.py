@@ -126,3 +126,23 @@ class DispatchReportConstraintSolutionView(APIView):
         serializer = model_serializer(data, many=True)
 
         return Response(serializer.data)
+
+
+class P5MinCaseSolutionView(APIView):
+    """Latest P5min report case solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest P5min case solution"""
+
+        model = models.P5MinCaseSolution
+        model_serializer = serializers.P5MinCaseSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
+        timestamp_str = str(latest_timestamp['run_datetime__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(run_datetime=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)

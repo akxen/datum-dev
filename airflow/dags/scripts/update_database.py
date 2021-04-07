@@ -153,6 +153,8 @@ def initialise_tables():
         'dispatch_report_interconnector_solution_files',
         'dispatch_report_constraint_solution',
         'dispatch_report_constraint_solution_files',
+        'p5min_case_solution',
+        'p5min_case_solution_files',
     ]
 
     for t in tables:
@@ -295,6 +297,24 @@ def get_dispatch_report_constraint_solution(files_dir, filename):
     return out
 
 
+def get_p5min_case_solution(files_dir, filename):
+    """Extract case solution from P5min reports"""
+
+    data = extract_values(files_dir=files_dir, filename=filename, filters=[(2, 'CASESOLUTION')])
+
+    df = pd.DataFrame(data)
+    df = df.rename(columns=df.iloc[0]).drop(df.index[0])
+
+    # Get table columns, convert to lower case, remove 'row_id'
+    columns = get_table_columns(table='p5min_case_solution')
+    columns = [i for i in columns if i != 'row_id']
+    columns = [i.upper() for i in columns]
+
+    out = df.loc[:, columns].replace(r'', np.NaN)
+
+    return out
+
+
 def upload_to_database(table, files_dir, filename, func):
     """Upload data to MySQL database"""
 
@@ -350,6 +370,10 @@ def update_database(table):
         'dispatch_report_constraint_solution': {
             'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'Dispatch_Reports'),
             'extractor_function': get_dispatch_report_constraint_solution
+        },
+        'p5min_case_solution': {
+            'files_dir': os.path.join(nemweb_root, 'Reports', 'CURRENT', 'P5_Reports'),
+            'extractor_function': get_p5min_case_solution
         },
     }
 

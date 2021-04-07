@@ -31,3 +31,9 @@ class DispatchReportConstraintSolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.DispatchReportConstraintSolution
         exclude = ['row_id']
+
+
+class P5MinCaseSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.P5MinCaseSolution
+        exclude = ['row_id']

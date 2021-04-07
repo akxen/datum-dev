@@ -217,3 +217,31 @@ class DispatchReportConstraintSolution(models.Model):
         managed = False
         db_table = 'dispatch_report_constraint_solution'
         app_label = 'reports'
+
+
+class P5MinCaseSolution(models.Model):
+    row_id = models.IntegerField(primary_key=True)
+    run_datetime = models.DateTimeField()
+    startinterval_datetime = models.DateTimeField()
+    intervention = models.IntegerField()
+    totalobjective = models.FloatField()
+    nonphysicallosses = models.IntegerField()
+    totalareagenviolation = models.FloatField()
+    totalinterconnectorviolation = models.FloatField()
+    totalgenericviolation = models.FloatField()
+    totalramprateviolation = models.FloatField()
+    totalunitmwcapacityviolation = models.FloatField()
+    total5minviolation = models.FloatField()
+    totalregviolation = models.FloatField()
+    total6secviolation = models.FloatField()
+    total60secviolation = models.FloatField()
+    totalenergyconstrviolation = models.FloatField()
+    totalenergyofferviolation = models.FloatField()
+    totalasprofileviolation = models.FloatField()
+    totalfaststartviolation = models.FloatField()
+    lastchanged = models.DateTimeField()
+
+    class Meta:
+        managed = False
+        db_table = 'p5min_case_solution'
+        app_label = 'reports'

@@ -26,8 +26,8 @@ dag = DAG("reports", default_args=default_args,
           schedule_interval='1-59/5 * * * *', catchup=False)
 
 t1 = BashOperator(
-    task_id="download_reports",
-    bash_command="/usr/local/airflow/dags/scripts/download_dispatch_scada.sh ",
+    task_id="download_data",
+    bash_command="/usr/local/airflow/dags/scripts/download_data.sh ",
     dag=dag)
 
 t2 = PythonOperator(
@@ -65,4 +65,11 @@ t6 = PythonOperator(
     dag=dag,
 )
 
-t1 >> [t2, t3, t4, t5, t6]
+t7 = PythonOperator(
+    task_id='update_p5min_case_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'p5min_case_solution'},
+    dag=dag,
+)
+
+t1 >> [t2, t3, t4, t5, t6, t7]
