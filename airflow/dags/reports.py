@@ -22,7 +22,8 @@ default_args = {
     "retry_delay": timedelta(seconds=30),
 }
 
-dag = DAG("reports", default_args=default_args, schedule_interval='1-59/5 * * * *', catchup=False)
+dag = DAG("reports", default_args=default_args,
+          schedule_interval='1-59/5 * * * *', catchup=False)
 
 t1 = BashOperator(
     task_id="download_reports",
@@ -50,4 +51,11 @@ t4 = PythonOperator(
     dag=dag,
 )
 
-t1 >> [t2, t3, t4]
+t5 = PythonOperator(
+    task_id='update_dispatch_report_interconnector_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'dispatch_report_interconnector_solution'},
+    dag=dag,
+)
+
+t1 >> [t2, t3, t4, t5]

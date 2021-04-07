@@ -3,8 +3,8 @@ from django.db.models import Max
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
-from .models import DispatchSCADA, DispatchReportCaseSolution
-from .serializers import DispatchSCADASerializer, DispatchReportCaseSolutionSerializer
+from . import models
+from . import serializers
 
 
 class DispatchSCADAView(APIView):
@@ -14,12 +14,12 @@ class DispatchSCADAView(APIView):
         """Get snapshot of latest dispatch for all DUIDs"""
 
         # Get latest timestamp
-        latest_timestamp = DispatchSCADA.objects.all().aggregate(Max('settlementdate'))
+        latest_timestamp = models.DispatchSCADA.objects.all().aggregate(Max('settlementdate'))
         timestamp_str = str(latest_timestamp['settlementdate__max'])
 
         # Extract records corresponding to latest timestamp
-        data = DispatchSCADA.objects.filter(settlementdate=timestamp_str)
-        serializer = DispatchSCADASerializer(data, many=True)
+        data = models.DispatchSCADA.objects.filter(settlementdate=timestamp_str)
+        serializer = serializers.DispatchSCADASerializer(data, many=True)
 
         return Response(serializer.data)
 
@@ -41,9 +41,9 @@ class DispatchSCADADetailView(APIView):
         observations = 12 * 12
 
         # TODO: fix this query. Should use group by.
-        data = (DispatchSCADA.objects.filter(duid__in=duids)
+        data = (models.DispatchSCADA.objects.filter(duid__in=duids)
                 .order_by('-settlementdate')[:observations * n_duids][::-1])
-        serializer = DispatchSCADASerializer(data, many=True)
+        serializer = serializers.DispatchSCADASerializer(data, many=True)
 
         return Response(serializer.data)
 
@@ -52,14 +52,57 @@ class DispatchReportCaseSolutionView(APIView):
     """Latest dispatch report case solution"""
 
     def get(self, request, format=None):
-        """Get snapshot of latest dispatch for all DUIDs"""
+        """Get snapshot of latest case solution"""
+
+        model = models.DispatchReportCaseSolution
+        model_serializer = serializers.DispatchReportCaseSolutionSerializer
 
         # Get latest timestamp
-        latest_timestamp = DispatchReportCaseSolution.objects.all().aggregate(Max('settlementdate'))
+        latest_timestamp = model.objects.all().aggregate(Max('settlementdate'))
         timestamp_str = str(latest_timestamp['settlementdate__max'])
 
         # Extract records corresponding to latest timestamp
-        data = DispatchReportCaseSolution.objects.filter(settlementdate=timestamp_str)
-        serializer = DispatchReportCaseSolutionSerializer(data, many=True)
+        data = model.objects.filter(settlementdate=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)
+
+
+class DispatchReportRegionSolutionView(APIView):
+    """Latest dispatch report region solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest region solution"""
+
+        model = models.DispatchReportRegionSolution
+        model_serializer = serializers.DispatchReportRegionSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('settlementdate'))
+        timestamp_str = str(latest_timestamp['settlementdate__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(settlementdate=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)
+
+
+class DispatchReportInterconnectorSolutionView(APIView):
+    """Latest dispatch report interconnector solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest interconnector solution"""
+
+        model = models.DispatchReportInterconnectorSolution
+        model_serializer = serializers.DispatchReportInterconnectorSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('settlementdate'))
+        timestamp_str = str(latest_timestamp['settlementdate__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(settlementdate=timestamp_str)
+        serializer = model_serializer(data, many=True)
 
         return Response(serializer.data)

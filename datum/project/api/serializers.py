@@ -1,15 +1,27 @@
 from rest_framework import serializers
 
-from .models import DispatchSCADA, DispatchReportCaseSolution
+from . import models
 
 
 class DispatchSCADASerializer(serializers.ModelSerializer):
     class Meta:
-        model = DispatchSCADA
+        model = models.DispatchSCADA
         fields = ['settlementdate', 'duid', 'scadavalue']
 
 
 class DispatchReportCaseSolutionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DispatchReportCaseSolution
+        model = models.DispatchReportCaseSolution
+        exclude = ['row_id']
+
+
+class DispatchReportRegionSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DispatchReportRegionSolution
+        exclude = ['row_id']
+
+
+class DispatchReportInterconnectorSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DispatchReportInterconnectorSolution
         exclude = ['row_id']

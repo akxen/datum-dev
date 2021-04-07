@@ -1,0 +1,17 @@
+row_id,INT NOT NULL AUTO_INCREMENT,
+settlementdate,DATETIME NOT NULL,KEY
+runno,"NUMERIC(3,0)",KEY
+interconnectorid,VARCHAR(10),KEY
+intervention,"NUMERIC(2,0)",KEY
+meteredmwflow,"NUMERIC(15,5)",
+mwflow,"NUMERIC(15,5)",
+mwlosses,"NUMERIC(15,5)",
+marginalvalue,"NUMERIC(15,5)",
+violationdegree,"NUMERIC(15,5)",
+importlimit,"NUMERIC(15,5)",
+exportlimit,"NUMERIC(15,5)",
+marginalloss,"NUMERIC(15,5)",
+exportgenconid,VARCHAR(20),
+importgenconid,VARCHAR(20),
+fcasexportlimit,"NUMERIC(15,5)",
+fcasimportlimit,"NUMERIC(15,5)",
