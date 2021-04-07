@@ -37,3 +37,21 @@ class P5MinCaseSolutionSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.P5MinCaseSolution
         exclude = ['row_id']
+
+
+class P5MinRegionSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.P5MinRegionSolution
+        exclude = ['row_id']
+
+
+class P5MinInterconnectorSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.P5MinInterconnectorSolution
+        exclude = ['row_id']
+
+
+class P5MinConstraintSolutionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.P5MinConstraintSolution
+        exclude = ['row_id']

@@ -1,0 +1,23 @@
+row_id,INT NOT NULL AUTO_INCREMENT,
+run_datetime,DATETIME NOT NULL,KEY
+intervention,"NUMERIC(2,0)",
+interconnectorid,VARCHAR(10),KEY
+interval_datetime,DATETIME NOT NULL,KEY
+meteredmwflow,"NUMERIC(15,5)",
+mwflow,"NUMERIC(15,5)",
+mwlosses,"NUMERIC(15,5)",
+marginalvalue,"NUMERIC(15,5)",
+violationdegree,"NUMERIC(15,5)",
+mnsp,"NUMERIC(1,0)",
+exportlimit,"NUMERIC(15,5)",
+importlimit,"NUMERIC(15,5)",
+marginalloss,"NUMERIC(15,5)",
+exportgenconid,VARCHAR(20),
+importgenconid,VARCHAR(20),
+fcasexportlimit,"NUMERIC(15,5)",
+fcasimportlimit,"NUMERIC(15,5)",
+lastchanged,DATETIME,
+local_price_adjustment_export,"NUMERIC(10,2)",
+locally_constrained_export,"NUMERIC(1,0)",
+local_price_adjustment_import,"NUMERIC(10,2)",
+locally_constrained_import,"NUMERIC(1,0)",

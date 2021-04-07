@@ -1,0 +1,13 @@
+row_id,INT NOT NULL AUTO_INCREMENT,
+run_datetime,DATETIME NOT NULL,KEY
+intervention,"NUMERIC(2,0)",
+interval_datetime,DATETIME NOT NULL,KEY
+constraintid,VARCHAR(20) NOT NULL,KEY
+rhs,"NUMERIC(15,5)",
+marginalvalue,"NUMERIC(15,5)",
+violationdegree,"NUMERIC(15,5)",
+lastchanged,DATETIME,
+duid,VARCHAR(20),
+genconid_effectivedate,DATETIME,
+genconid_versionno,"NUMERIC(22,0)",
+lhs,"NUMERIC(15,5)",

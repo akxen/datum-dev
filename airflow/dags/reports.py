@@ -72,4 +72,25 @@ t7 = PythonOperator(
     dag=dag,
 )
 
-t1 >> [t2, t3, t4, t5, t6, t7]
+t8 = PythonOperator(
+    task_id='update_p5min_region_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'p5min_region_solution'},
+    dag=dag,
+)
+
+t9 = PythonOperator(
+    task_id='update_p5min_interconnector_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'p5min_interconnector_solution'},
+    dag=dag,
+)
+
+t10 = PythonOperator(
+    task_id='update_p5min_constraint_solution',
+    python_callable=update_database,
+    op_kwargs={'table': 'p5min_constraint_solution'},
+    dag=dag,
+)
+
+t1 >> [t2, t3, t4, t5, t6, t7, t8, t9, t10]

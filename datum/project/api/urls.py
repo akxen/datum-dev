@@ -12,7 +12,7 @@ urlpatterns = [
     path('dispatch_report/constraint_solution/', views.DispatchReportConstraintSolutionView.as_view()),
 
     path('p5min/case_solution/', views.P5MinCaseSolutionView.as_view()),
-    # path('p5min/region_solution/', views.P5minRegionSolutionView.as_view()),
-    # path('p5min/interconnector_solution/', views.P5minInterconnectorSolutionView.as_view()),
-    # path('p5min/constraint_solution/', views.P5minConstraintSolutionView.as_view()),
+    path('p5min/region_solution/', views.P5MinRegionSolutionView.as_view()),
+    path('p5min/interconnector_solution/', views.P5MinInterconnectorSolutionView.as_view()),
+    path('p5min/constraint_solution/', views.P5MinConstraintSolutionView.as_view()),
 ]

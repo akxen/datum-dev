@@ -146,3 +146,63 @@ class P5MinCaseSolutionView(APIView):
         serializer = model_serializer(data, many=True)
 
         return Response(serializer.data)
+
+
+class P5MinRegionSolutionView(APIView):
+    """Latest P5min report region solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest P5min region solution"""
+
+        model = models.P5MinRegionSolution
+        model_serializer = serializers.P5MinRegionSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
+        timestamp_str = str(latest_timestamp['run_datetime__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(run_datetime=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)
+
+
+class P5MinInterconnectorSolutionView(APIView):
+    """Latest P5min report interconnector solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest P5min interconnector solution"""
+
+        model = models.P5MinInterconnectorSolution
+        model_serializer = serializers.P5MinInterconnectorSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
+        timestamp_str = str(latest_timestamp['run_datetime__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(run_datetime=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)
+
+
+class P5MinConstraintSolutionView(APIView):
+    """Latest P5min report constraint solution"""
+
+    def get(self, request, format=None):
+        """Get snapshot of latest P5min constraint solution"""
+
+        model = models.P5MinConstraintSolution
+        model_serializer = serializers.P5MinConstraintSolutionSerializer
+
+        # Get latest timestamp
+        latest_timestamp = model.objects.all().aggregate(Max('run_datetime'))
+        timestamp_str = str(latest_timestamp['run_datetime__max'])
+
+        # Extract records corresponding to latest timestamp
+        data = model.objects.filter(run_datetime=timestamp_str)
+        serializer = model_serializer(data, many=True)
+
+        return Response(serializer.data)
