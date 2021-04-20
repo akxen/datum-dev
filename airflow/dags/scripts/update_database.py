@@ -13,6 +13,8 @@ import csv
 
 import MySQLdb
 import MySQLdb.cursors
+
+import sqlalchemy
 from sqlalchemy import create_engine
 
 import numpy as np
@@ -411,5 +413,5 @@ def update_database(table):
                                files_dir=files_dir,
                                filename=i,
                                func=table_info[table]['extractor_function'])
-        except MySQLdb.IntegrityError as e:
+        except (MySQLdb.IntegrityError, sqlalchemy.exc.IntegrityError) as e:
             print(e, table, i)
