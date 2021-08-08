@@ -1,7 +1,6 @@
 version: '3.9'
 
 services:
-  # API used to query current reports data
   mysql:
     image: kubedb/mysql:5.7.25
     command: --max_allowed_packet=32505856
@@ -29,7 +28,6 @@ services:
     #   restart_policy:
     #     condition: on-failure
 
-  # Data collection using Apache Airflow
   postgres:
     image: postgres:9.6
     environment:
